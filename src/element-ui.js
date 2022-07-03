@@ -35,7 +35,11 @@ import {
     Backtop,
     Popconfirm,
     Pagination,
-    DatePicker
+    DatePicker,
+    Upload,
+    Drawer,
+    Alert,
+    Dropdown,
 } from 'element-ui';
 
 // 按需加载 ElementUI
@@ -71,6 +75,11 @@ Vue.use(Backtop);
 Vue.use(Popconfirm);
 Vue.use(Pagination);
 Vue.use(DatePicker);
+Vue.use(Upload);
+Vue.use(Drawer);
+Vue.use(Alert);
+Vue.use(Dropdown);
+
 
 
 Vue.prototype.$msgbox = MessageBox;

@@ -9,6 +9,8 @@ module.exports = {
   productionSourceMap: false,
   devServer: {
     disableHostCheck: true,
+    port: 9080,
+    proxy:'http://127.0.0.1:8080'
   },
   chainWebpack: config => {
     config.plugins.delete('prefetch')

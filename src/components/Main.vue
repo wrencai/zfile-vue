@@ -24,11 +24,22 @@
             </el-col>
         </el-row>
 
+
         <!-- 文档区 -->
         <el-card :class="isFullScreen ? '' : 'zfile-readme-center'"
                  v-if="$store.getters.showDocument && $store.state.common.config.readme !== null">
             <markdown-render :text="$store.state.common.config.readme"/>
         </el-card>
+        
+        <!-- 上传区域 -->
+        <el-row>
+          <el-col :offset="isFullScreen ? 0 : 3"
+                :xs="24"
+                :sm="24"
+                :lg="isFullScreen ? 24 : 18">
+                <div class="zfile-uploader-area"><UploadFile :drive-id="driveId"></UploadFile></div>
+          </el-col>
+        </el-row>
     </div>
 </template>
 
@@ -36,12 +47,18 @@
     import Header from './Header.vue'
     import List from './List.vue'
     import MarkdownRender from "./MarkdownRender";
+    import UploadFile from './UploadFile.vue'
 
     export default {
         name: 'Main',
         props: ['driveId'],
+        data() {
+            return {
+
+            }
+        },
         components: {
-            List, Header, MarkdownRender
+            List, Header, MarkdownRender,UploadFile
         },
         watch: {
             // 如果有自定义 css, js, 则加载到页面上.
@@ -61,6 +78,9 @@
         computed: {
             isFullScreen() {
                 return this.common.isMobile() || this.$store.getters.layout !== 'center';
+            },
+            uploadUrl() {
+                return '/api/upload/'+this.driveId
             }
         }
     }
@@ -130,5 +150,18 @@
 
     .el-card__body {
         padding-right: 10px;
+    }
+
+    
+    .zfile-uploader-area {
+        display: block;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        height: 48px;
+        line-height: 48px !important;
+        background: #fafafa;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-left: 30px;
+        text-align: center;
     }
 </style>

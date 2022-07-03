@@ -52,7 +52,12 @@ axios.interceptors.request.use(
             url = url.substring(0, url.length - 1);
             config.params = {}
         }
-        config.url = url;
+        // 追加时间戳解决浏览器缓存问题
+        if(url.indexOf("?")>0) {
+            config.url = url+"&_t="+(new Date()).getTime();
+        } else {
+            config.url = url+"?_t="+(new Date()).getTime();
+        }
         return config
     },
 );

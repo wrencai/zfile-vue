@@ -1,4 +1,5 @@
 <template>
+<div>
     <el-form :inline="true" class="zfile-header" size="mini">
         <el-form-item>
             <el-breadcrumb separator="/" separator-class="el-icon-arrow-right">
@@ -8,11 +9,14 @@
                                     :key="item.path">{{item.name}}</el-breadcrumb-item>
             </el-breadcrumb>
         </el-form-item>
+            <!-- 上传 -->
+            <!-- <UploadFile :drive-id="driveId"></UploadFile> -->
         <div class="zfile-header-drive box animate__animated animate__fadeIn">
 
           <el-form-item v-show="this.$store.getters.debugMode" label="已开启 DEBUG 模式，使用完请及时关闭" class="zfile-debug-tips" size="small">
             <el-button @click="resetAdminPwd" size="small" type="danger">重置密码</el-button>
           </el-form-item>
+
 
             <el-form-item label="图片模式" size="small">
                 <el-switch v-model="imgModel"></el-switch>
@@ -25,18 +29,25 @@
                            :value="item.id">
                 </el-option>
             </el-select>
+            
+
         </div>
+        
     </el-form>
+</div>
 </template>
 
 <script>
     import path from 'path'
+    
+    import UploadFile from './UploadFile.vue'
 
     export default {
         name: "Header",
         props: ['driveId'],
         data() {
-            return {
+            return {activeIndex: '1',
+        activeIndex2: '1',
                 imgModel: false,
                 driveList: [],
                 currentDriveId: "",
@@ -45,10 +56,16 @@
                 searching: false
             }
         },
+        components: {
+            UploadFile
+        },
         created() {
             this.buildBreadcrumbData();
         },
         methods: {
+           handleSelect(key, keyPath) {
+        console.log(key, keyPath);
+      },
             resetAdminPwd() {
                 this.$confirm('是否确认重置后台管理员密码？重置后用户名/密码将强制修改为 admin 123456', '提示', {
                     confirmButtonText: '确定',
@@ -146,6 +163,18 @@
 </script>
 
 <style scoped>
+
+  .el-dropdown {
+    vertical-align: top;
+  }
+  .el-dropdown + .el-dropdown {
+    margin-left: 15px;
+  }
+  .el-icon-arrow-down {
+    font-size: 12px;
+  }
+
+
     .zfile-header {
         display: flex;
         flex-flow: row nowrap;

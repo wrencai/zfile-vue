@@ -11,7 +11,7 @@
                 @sort-change="sortMethod"
                 :data="this.$store.getters.tableData"
                 @row-click="openFolder"
-                :height="this.$store.getters.showDocument && this.$store.state.common.config.readme !== null ? '50vh' : '84vh'"
+                max-height="500px"
                 :size="this.$store.getters.tableSize"
                 @row-contextmenu="showMenu">
             <el-table-column
@@ -86,6 +86,20 @@
             </el-table-column>
         </el-table>
 
+        <!-- 分页 -->
+        <div class="zfile-pager">
+            <el-pagination
+                        ref="fileTablePager"
+                        @size-change="handlePageSizeChange"
+                        @current-change="handleCurrentPageChange"
+                        :current-page="pager.currentPageNum"
+                        :page-sizes="pager.pageSizeSelect"
+                        :page-size="pager.pageSize"
+                        layout="prev, slot, sizes, total, next"
+                        :total="pager.total">
+                        <span :slot="slot">第{{pager.currentPageNum}}页&nbsp;</span>
+            </el-pagination>
+        </div>
 
         <el-dialog id="textDialog" :destroy-on-close="true"
                    :title="currentClickRow.name"
@@ -281,7 +295,14 @@
                 },
                 dialogBatchCopyLinkVisible: false,
                 batchCopyLinkList: [],
-	            batchCopyLinkLoading: false
+	            batchCopyLinkLoading: false,
+                pager: {
+                    pageSizeSelect: [8,1,2,3,4,5,10, 20, 30, 40],
+                    currentPageNum: 1,
+                    pageSize: -1,
+                    total: -1,
+                    allData: []
+                }
             }
         },
         watch: {
@@ -290,9 +311,64 @@
             }
         },
         mounted() {
+            this.initPager();
             this.loadFile();
         },
         methods: {
+            // 初始化分页器
+            initPager() {                
+                this.pager.currentPageNum = 1;
+                this.pager.pageSize = this.pager.pageSizeSelect[0];
+            },
+            // 根据分页参数计算当前页数据
+            calculateCurrentPageData(){
+                // 置空数据
+                this.$store.commit('tableData', []);
+                let allData = this.pager.allData;
+                // 空数据处理
+                if(allData.length === 0) {                  
+                    this.pager.total = 0;  
+                    this.$store.commit('tableData', []);
+                    return;
+                }
+                let allFileData = allData;
+                this.pager.total = allData.length;
+                // 第一条数据是返回上一层目录，则不作为分页数据处理，每一页都显示该记录
+                if(allData[0].type === 'BACK') {
+                    allFileData = allData.slice(1);
+                    this.pager.total = allData.length - 1;
+                }
+                // 空数据处理
+                if(allFileData.length === 0) {               
+                    this.pager.total = 0;     
+                    this.$store.commit('tableData', []);
+                    return;
+                }
+                let pageSize = this.pager.pageSize;
+                let curPage = this.pager.currentPageNum;
+                let total = this.pager.total;
+                let start = (curPage-1)*pageSize;
+                let end = curPage*pageSize > total ? total : curPage*pageSize;
+                let curData = [];
+                // 第一条数据是返回上一层目录，每一页都显示该记录
+                if(allData[0].type === 'BACK') {
+                    curData.push(allData[0])
+                }
+                curData = curData.concat(allFileData.slice(start, end));
+
+                this.$store.commit('tableData', curData);
+            },
+            // 分页大小改变时调用
+            handlePageSizeChange(pageSize) {
+                this.pager.pageSize = pageSize;
+                this.pager.currentPageNum = 1;
+                this.calculateCurrentPageData();
+            },
+            // 切换页码时调用
+            handleCurrentPageChange(currentPage) {
+                this.pager.currentPageNum = currentPage;
+                this.calculateCurrentPageData();
+            },
             // 批量复制直链字段
             batchCopyLinkField(field) {
                 let copyVal = ''
@@ -429,9 +505,12 @@
                         });
                     }
 
-                    this.$store.commit('tableData', data);
+                    // this.$store.commit('tableData', data);
                     this.loading = false;
                     this.initLoading = false;
+                    //分页计算
+                    this.pager.allData = data;                    
+                    this.calculateCurrentPageData();
                 });
             },
             // 文件预览
@@ -478,6 +557,8 @@
                     }
 
                     this.$router.push("/" + this.driveId + prefixPath + path);
+                    // 路由切换时，重新初始化分页器
+                    this.initPager();
                 }
             },
             openImage() {
@@ -596,6 +677,9 @@
 </script>
 
 <style scoped>
+    .zfile-pager {
+        margin-bottom: 20px;
+    }
     #List {
         overflow: hidden;
     }
